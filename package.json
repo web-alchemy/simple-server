@@ -1,0 +1,15 @@
+{
+  "name": "@web-alchemy/simple-server",
+  "version": "0.0.1",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "monochromer",
+    "email": "monochromer@mail.ru"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
