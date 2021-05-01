@@ -8,8 +8,24 @@
     "name": "monochromer",
     "email": "monochromer@mail.ru"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/web-alchemy/simple-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/web-alchemy/simple-server/issues"
+  },
+  "homepage": "https://github.com/web-alchemy/simple-server",
+  "engines": {
+    "node": ">=14.6.0"
+  },
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
-  }
+  },
+  "keywords": [
+    "server",
+    "http",
+    "web"
+  ]
 }
