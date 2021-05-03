@@ -49,4 +49,14 @@ class WebServer extends Server {
   }
 }
 
+async function parseBody(req) {
+  const body = [];
+  for await (const chunk of req) {
+    body.push(chunk);
+  }
+  return Buffer.concat(body).toString();
+};
+
+
 module.exports = WebServer;
+module.exports.parseBody = parseBody;
