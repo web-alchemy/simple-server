@@ -60,8 +60,7 @@ class Application extends EventEmitter {
         const eventName = method.toUpperCase() + ' ' + url;
         if (this.hasListeners(eventName)) {
           this.emit(eventName, context);
-        }
-        else {
+        } else {
           // TODO: handle via `app.on(Application.NOT_FOUND, (ctx) => {})`?
           const notFoundError = new Error('not found');
           notFoundError.name = 'NotFound';
