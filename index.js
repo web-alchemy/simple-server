@@ -67,9 +67,8 @@ class Application extends EventEmitter {
           notFoundError.name = 'NotFound';
           throw notFoundError;
         }
-      }
-      catch (error) {
-        handleError(context, error);
+      } catch (error) {
+        this.handleError(context, error);
       }
     }
   }
