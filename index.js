@@ -81,6 +81,6 @@ async function parseBody(req) {
   return Buffer.concat(body).toString();
 };
 
-
 module.exports = Application;
+module.exports.Application = Application;
 module.exports.parseBody = parseBody;
