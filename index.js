@@ -54,21 +54,22 @@ class Application extends EventEmitter {
 
     for await (const [req, res] of server) {
       const context = { req, res };
-      asyncLocalStorage.enterWith(context);
-      try {
-        const { method, url } = req;
-        const eventName = method.toUpperCase() + ' ' + url;
-        if (this.hasListeners(eventName)) {
-          this.emit(eventName, context);
-        } else {
-          // TODO: handle via `app.on(Application.NOT_FOUND, (ctx) => {})`?
-          const notFoundError = new Error('not found');
-          notFoundError.name = 'NotFound';
-          throw notFoundError;
+      asyncLocalStorage.run(context, () => {
+        try {
+          const { method, url } = req;
+          const eventName = method.toUpperCase() + ' ' + url;
+          if (this.hasListeners(eventName)) {
+            this.emit(eventName, context);
+          } else {
+            // TODO: handle via `app.on(Application.NOT_FOUND, (ctx) => {})`?
+            const notFoundError = new Error('not found');
+            notFoundError.name = 'NotFound';
+            throw notFoundError;
+          }
+        } catch (error) {
+          this.handleError(context, error);
         }
-      } catch (error) {
-        this.handleError(context, error);
-      }
+      })
     }
   }
 }
