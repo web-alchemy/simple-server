@@ -24,11 +24,14 @@
     "postpublish": "git push origin --all; git push origin --tags",
     "postversion": "npm publish",
     "preversion": "npm test",
-    "test": "echo \"No test specified\" && exit 0"
+    "test": "mocha test.js"
   },
   "keywords": [
     "server",
     "http",
     "web"
-  ]
+  ],
+  "devDependencies": {
+    "mocha": "^8.4.0"
+  }
 }
