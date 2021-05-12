@@ -24,7 +24,7 @@
     "postpublish": "git push origin --all; git push origin --tags",
     "postversion": "npm publish",
     "preversion": "npm test",
-    "test": "mocha test.js"
+    "test": "mocha test/**/*.js"
   },
   "keywords": [
     "server",
