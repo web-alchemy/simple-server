@@ -16,6 +16,7 @@ class Application extends EventEmitter {
       captureRejections: true,
       ...options
     });
+    this._server = new WebServer();
   }
 
   [Symbol.for('nodejs.rejection')](error) {
@@ -34,25 +35,24 @@ class Application extends EventEmitter {
     } else {
       switch (true) {
         case (error.name === 'NotFound'): {
-          error.statusCode = 404;
+          context.res.statusCode = 404;
           context.res.end(STATUS_CODES[404]);
           break;
         }
         default: {
           context.res.statusCode = 500;
-          context.res.end((error ?? STATUS_CODES[500]).toString());
+          context.res.end((error.message || STATUS_CODES[500]).toString());
         }
       }
     }
   }
 
   async listen(...args) {
-    const server = new WebServer();
-    server.listen(...args);
+    this._server.listen(...args);
 
     await Promise.resolve();
 
-    for await (const [req, res] of server) {
+    for await (const [req, res] of this._server) {
       const context = { req, res };
       asyncLocalStorage.run(context, () => {
         try {
@@ -71,6 +71,20 @@ class Application extends EventEmitter {
         }
       })
     }
+  }
+
+  async close(callback) {
+    return new Promise((resolve, reject) => {
+      this._server.close((error) => {
+        if (error) {
+          reject(error);
+          callback && callback(error);
+        } else {
+          resolve();
+          callback && callback();
+        }
+      })
+    })
   }
 }
 
