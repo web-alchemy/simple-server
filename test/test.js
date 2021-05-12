@@ -1,5 +1,4 @@
 const assert = require('assert').strict;
-const { URL } = require('url');
 const http = require('http');
 const { once } = require('events');
 
