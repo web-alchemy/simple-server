@@ -33,17 +33,11 @@ class Application extends EventEmitter {
     if (this.hasListeners('error')) {
       this.emit('error', context);
     } else {
-      switch (true) {
-        case (error.name === 'NotFound'): {
-          context.res.statusCode = 404;
-          context.res.end(STATUS_CODES[404]);
-          break;
-        }
-        default: {
-          context.res.statusCode = 500;
-          context.res.end((error.message || STATUS_CODES[500]).toString());
-        }
-      }
+      const status = error.statusCode || error.status || 500;
+      const statusMessage = STATUS_CODES[status];
+      const message = error.message || statusMessage;
+      context.res.statusCode = status;
+      context.res.end(message);
     }
   }
 
@@ -62,8 +56,9 @@ class Application extends EventEmitter {
             this.emit(eventName, context);
           } else {
             // TODO: handle via `app.on(Application.NOT_FOUND, (ctx) => {})`?
-            const notFoundError = new Error('not found');
+            const notFoundError = new Error('Not Found');
             notFoundError.name = 'NotFound';
+            notFoundError.status = notFoundError.statusCode = 404;
             throw notFoundError;
           }
         } catch (error) {
