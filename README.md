@@ -26,7 +26,7 @@ app.on('GET /some-error/', async ({ req, res }) => {
 })
 
 app.on('error', ({ req, res, error }) => {
-  res.end(error.message ?? 'error'); // boom (error from route `GET /some-error/`)
+  res.end(error.message || 'error'); // boom (error from route `GET /some-error/`)
 });
 
 // works only if there is an handler `app.on('error', ctx => {})`
