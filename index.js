@@ -68,7 +68,7 @@ class Application extends EventEmitter {
     }
   }
 
-  async close(callback) {
+  close(callback) {
     return new Promise((resolve, reject) => {
       this._server.close((error) => {
         if (error) {
