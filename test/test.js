@@ -72,6 +72,25 @@ describe('@web-alchemy/simple-server', function() {
     assert.equal(body, STATUS_MESSAGE, `Response body should be ${STATUS_MESSAGE}`);
   });
 
+  it('It should handle 404 route if `Application.NOT_FOUND_ROUTE` is assigned', async () => {
+    const NON_EXIST_ROUTE = BASE_URL + '/not-exist-route/';
+    const STATUS_CODE = 404;
+    const STATUS_MESSAGE = 'Message from `Application.NOT_FOUND_ROUTE`';
+
+    app.on(Application.NOT_FOUND_ROUTE, ({ res }) => {
+      res.statusCode = STATUS_CODE;
+      res.statusMessage = STATUS_MESSAGE;
+      res.end(STATUS_MESSAGE);
+    });
+
+    const { response, body } = await sendRequest(NON_EXIST_ROUTE, 'GET');
+
+    assert.equal(response.statusCode, STATUS_CODE, `Status code should be ${STATUS_CODE}`);
+    assert.equal(response.statusMessage, STATUS_MESSAGE, `Status message should be ${STATUS_MESSAGE}`);
+    assert.equal(body, STATUS_MESSAGE, `Response body should be ${STATUS_MESSAGE}`);
+
+  });
+
   it('It should handle common server 500 error with message', async () => {
     const STATUS_CODE = 500;
     const STATUS_MESSAGE = http.STATUS_CODES[STATUS_CODE];

@@ -21,9 +21,15 @@ app.on('POST /create/', ({ req, res }) => {
   res.end('/create/');
 });
 
+// special route for `404` handlers
+app.on(Application.NOT_FOUND_ROUTE, (ctx) => {
+  ctx.res.statusCode = 404;
+  ctx.res.end('Not Found');
+});
+
 app.on('GET /some-error/', async ({ req, res }) => {
   throw new Error('boom');
-})
+});
 
 app.on('error', ({ req, res, error }) => {
   res.end(error.message || 'error'); // boom (error from route `GET /some-error/`)

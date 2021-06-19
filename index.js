@@ -5,6 +5,8 @@ const { AsyncLocalStorage } = require('async_hooks');
 const asyncLocalStorage = new AsyncLocalStorage();
 
 class Application extends EventEmitter {
+  static NOT_FOUND_ROUTE = '__NOT_FOUND_ROUTE__';
+
   constructor(options) {
     super({
       captureRejections: true,
@@ -44,11 +46,14 @@ class Application extends EventEmitter {
         if (this.hasListeners(eventName)) {
           this.emit(eventName, context);
         } else {
-          // TODO: handle via `app.on(Application.NOT_FOUND, (ctx) => {})`?
-          const notFoundError = new Error('Not Found');
-          notFoundError.name = 'NotFound';
-          notFoundError.status = notFoundError.statusCode = 404;
-          throw notFoundError;
+          if (this.hasListeners(Application.NOT_FOUND_ROUTE)) {
+            this.emit(Application.NOT_FOUND_ROUTE, context);
+          } else {
+            const notFoundError = new Error('Not Found');
+            notFoundError.name = 'NotFound';
+            notFoundError.status = notFoundError.statusCode = 404;
+            throw notFoundError;
+          }
         }
       } catch (error) {
         this.handleError(context, error);
