@@ -61,7 +61,7 @@ class Application extends EventEmitter {
     });
   }
 
-  async listen(...args) {
+  listen(...args) {
     this._server.on('request', this.onRequest);
     this._server.listen(...args);
   }
