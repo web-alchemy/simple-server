@@ -2,6 +2,10 @@ const { Server, STATUS_CODES } = require('http');
 const { EventEmitter } = require('events');
 const { AsyncLocalStorage } = require('async_hooks');
 
+function arrayEntries(array) {
+  return array.map((item, index) => [item, index, array])
+}
+
 const asyncLocalStorage = new AsyncLocalStorage();
 
 class Application extends EventEmitter {
@@ -37,6 +41,88 @@ class Application extends EventEmitter {
     }
   }
 
+  getDynamicRouteMatch(originalUrlSegments, routeUrlSegments) {
+    const result = {
+      isMatch: false,
+      parameters: {}
+    }
+
+    if (originalUrlSegments.length !== routeUrlSegments.length) {
+      return result
+    }
+
+    const entries = arrayEntries(routeUrlSegments)
+
+    for (const [item, index] of entries) {
+      if (!item.isDynamic) {
+        if (item.name !== originalUrlSegments[index]) {
+          return result
+        }
+      }
+    }
+
+    const parameters = {}
+    for (const [item, index] of entries) {
+      if (item.isDynamic) {
+        parameters[item.parameter] = originalUrlSegments[index]
+      }
+    }
+
+    result.isMatch = true
+    result.parameters = parameters
+
+    return result
+  }
+
+  getDynamicMatch(originalMethod, originalUrl) {
+    const dynamicRoutes = this.eventNames()
+      .filter(eventName => eventName !== Application.NOT_FOUND_ROUTE && eventName !== 'error')
+      .map(eventName => eventName.split(' '))
+      .filter(([method, eventName]) => eventName.includes('/:'));
+
+    const matchResult = {
+      isMatch: false
+    }
+
+    if (dynamicRoutes.length === 0) {
+      return matchResult;
+    }
+
+    const originalUrlSegments = originalUrl.split('/').filter(Boolean);
+
+    for (const [method, routeURL] of dynamicRoutes) {
+      if (originalMethod !== method) {
+        continue;
+      }
+
+      const routeUrlSegments = routeURL
+        .split('/')
+        .filter(Boolean)
+        .map(name => {
+          const isDynamic = name.startsWith(':')
+          return {
+            name,
+            isDynamic,
+            parameter: isDynamic ? name.slice(1) : name
+          }
+        });
+
+      if (originalUrlSegments.length !== routeUrlSegments.length) {
+        continue;
+      }
+
+      const routeMatchInfo = this.getDynamicRouteMatch(originalUrlSegments, routeUrlSegments);
+
+      if (routeMatchInfo.isMatch) {
+        routeMatchInfo.method = method;
+        routeMatchInfo.routeURL = routeURL
+        return routeMatchInfo;
+      }
+    }
+
+    return matchResult
+  }
+
   onRequest = (req, res) => {
     const context = { req, res };
     asyncLocalStorage.run(context, () => {
@@ -46,13 +132,19 @@ class Application extends EventEmitter {
         if (this.hasListeners(eventName)) {
           this.emit(eventName, context);
         } else {
-          if (this.hasListeners(Application.NOT_FOUND_ROUTE)) {
-            this.emit(Application.NOT_FOUND_ROUTE, context);
+          const dynamicRouteInfo = this.getDynamicMatch(method.toUpperCase(), url);
+          if (dynamicRouteInfo.isMatch) {
+            context.parameters = dynamicRouteInfo.parameters;
+            this.emit(dynamicRouteInfo.method + ' ' + dynamicRouteInfo.routeURL, context);
           } else {
-            const notFoundError = new Error('Not Found');
-            notFoundError.name = 'NotFound';
-            notFoundError.status = notFoundError.statusCode = 404;
-            throw notFoundError;
+            if (this.hasListeners(Application.NOT_FOUND_ROUTE)) {
+              this.emit(Application.NOT_FOUND_ROUTE, context);
+            } else {
+              const notFoundError = new Error('Not Found');
+              notFoundError.name = 'NotFound';
+              notFoundError.status = notFoundError.statusCode = 404;
+              throw notFoundError;
+            }
           }
         }
       } catch (error) {
