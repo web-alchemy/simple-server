@@ -41,8 +41,8 @@ class Application extends EventEmitter {
     const context = { req, res };
     asyncLocalStorage.run(context, () => {
       try {
-        const { method, url } = req;
-        const eventName = method.toUpperCase() + ' ' + url;
+        const { pathname } = new URL(req.url, 'http://localhost')
+        const eventName = req.method.toUpperCase() + ' ' + pathname;
         if (this.hasListeners(eventName)) {
           this.emit(eventName, context);
         } else {
