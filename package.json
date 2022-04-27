@@ -32,6 +32,6 @@
     "web"
   ],
   "devDependencies": {
-    "mocha": "^8.4.0"
+    "mocha": "^9.2.2"
   }
 }
